@@ -177,6 +177,34 @@
       background: #90caf9;
       clip-path: ellipse(50% 70% at 50% 50%);
     }
+
+    /* Стили для формы ввода коэффициентов */
+    .input-group {
+      margin: 15px 0;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .submit-btn {
+      background: #7b1fa2;
+      width: 100%;
+    }
+
+    .submit-btn:hover {
+      background: #6a1b9a;
+    }
   </style>
 </head>
 <body>
@@ -190,10 +218,10 @@
 
       <div id="initial-buttons">
         <button class="instruction-btn" id="method1">Как построить параболу?</button>
-        <button class="instruction-btn" id="method2">Как построить параболу по коэффициентам?</button>
+        <button class="instruction-btn" id="method2">Построить параболу по коэффициентам</button>
       </div>
 
-      <button class="next-btn" id="next-btn">Начнём!</button>
+      <button class="next-btn" id="next-btn">Дальше!</button>
       <button class="reset-btn" id="reset-btn">Вернуться</button>
 
       <div id="method1-steps" class="step-content">
@@ -248,11 +276,65 @@
       </div>
 
       <div id="method2-steps" class="step-content">
-        <h3>Построение параболы по коэффициентам</h3>
-        <p><strong>Шаг 1:</strong> Общий вид квадратичной функции: y = ax² + bx + c.</p>
-        <p><strong>Шаг 2:</strong> Коэффициент 'a' определяет направление и ширину параболы.</p>
-        <p><strong>Шаг 3:</strong> Коэффициент 'b' влияет на положение вершины по оси x.</p>
-        <p><strong>Шаг 4:</strong> Коэффициент 'c' - это точка пересечения с осью y.</p>
+        <div id="step-input" style="display:block;">
+          <h3>Введите коэффициенты квадратного уравнения</h3>
+          <p>Функция имеет вид: y = ax² + bx + c</p>
+          <div class="input-group">
+            <label for="coef-a">Коэффициент a:</label>
+            <input type="number" id="coef-a" step="any" placeholder="Введите коэффициент a">
+          </div>
+          <div class="input-group">
+            <label for="coef-b">Коэффициент b:</label>
+            <input type="number" id="coef-b" step="any" placeholder="Введите коэффициент b">
+          </div>
+          <div class="input-group">
+            <label for="coef-c">Коэффициент c:</label>
+            <input type="number" id="coef-c" step="any" placeholder="Введите коэффициент c">
+          </div>
+          <button class="submit-btn" id="submit-coefs">Построить график</button>
+        </div>
+
+        <div id="step2-m2" style="display:none;">
+          <h3>Построение параболы</h3>
+          <p>Вы ввели следующую квадратичную функцию:</p>
+          <p id="function-display" class="math"></p>
+        </div>
+
+        <div id="step3-m2" style="display:none;">
+          <p>1. Определим направление ветвей параболы:</p>
+          <p id="direction-info"></p>
+        </div>
+
+        <div id="step4-m2" style="display:none;">
+          <p>2. Найдем вершину параболы:</p>
+          <p id="vertex-info"></p>
+        </div>
+
+        <div id="step5-m2" style="display:none;">
+          <p>3. Ось симметрии параболы:</p>
+          <p id="axis-info"></p>
+        </div>
+
+        <div id="step6-m2" style="display:none;">
+          <p>4. Точки пересечения с осями координат:</p>
+          <p id="intersections-info"></p>
+        </div>
+
+        <div id="step7-m2" style="display:none;">
+          <p>5. Дополнительные точки для построения:</p>
+          <table id="additional-points">
+            <tr><th>x</th><th>y</th></tr>
+          </table>
+        </div>
+
+        <div id="step8-m2" style="display:none;">
+          <p>Соединим полученные точки!</p>
+        </div>
+
+        <div id="step9-m2" style="display:none;">
+          <p>Готово! Мы построили график квадратичной функции:</p>
+          <p id="final-function" class="math"></p>
+        </div>
       </div>
     </div>
 
@@ -280,11 +362,27 @@
     const method1Steps = document.getElementById('method1-steps');
     const method2Steps = document.getElementById('method2-steps');
     const initialButtons = document.getElementById('initial-buttons');
+    const submitCoefsBtn = document.getElementById('submit-coefs');
+
+    // Элементы для второго метода
+    const coefAInput = document.getElementById('coef-a');
+    const coefBInput = document.getElementById('coef-b');
+    const coefCInput = document.getElementById('coef-c');
+    const functionDisplay = document.getElementById('function-display');
+    const directionInfo = document.getElementById('direction-info');
+    const vertexInfo = document.getElementById('vertex-info');
+    const axisInfo = document.getElementById('axis-info');
+    const intersectionsInfo = document.getElementById('intersections-info');
+    const additionalPointsTable = document.getElementById('additional-points');
+    const finalFunctionDisplay = document.getElementById('final-function');
 
     let currentStep = 0;
     let currentMethod = null;
+    let a = 0, b = 0, c = 0;
+    let vertex = {x: 0, y: 0};
+    let points = [];
 
-    // Точки для построения параболы y = x² - 6x + 8
+    // Точки для построения параболы y = x² - 6x + 8 (для первого метода)
     const parabolaPoints = [
       {x: 0, y: 8},    // пересечение с осью y
       {x: 2, y: 0},    // пересечение с осью x
@@ -299,15 +397,38 @@
       initialButtons.style.display = 'none';
       method1Steps.classList.add('active');
       nextBtn.style.display = 'block';
+      currentStep = 0;
       resetCalculator();
+      updateContent();
     });
 
     method2Btn.addEventListener('click', function() {
       currentMethod = 'coefficients';
       initialButtons.style.display = 'none';
       method2Steps.classList.add('active');
-      nextBtn.style.display = 'block';
       resetCalculator();
+      document.getElementById('step-input').style.display = 'block';
+    });
+
+    submitCoefsBtn.addEventListener('click', function() {
+      a = parseFloat(coefAInput.value);
+      b = parseFloat(coefBInput.value);
+      c = parseFloat(coefCInput.value);
+
+      if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        alert('Пожалуйста, введите все коэффициенты!');
+        return;
+      }
+
+      if (a === 0) {
+        alert('Коэффициент a не может быть равен нулю для квадратичной функции!');
+        return;
+      }
+
+      document.getElementById('step-input').style.display = 'none';
+      nextBtn.style.display = 'block';
+      currentStep = 1;
+      updateContent();
     });
 
     nextBtn.addEventListener('click', function() {
@@ -335,7 +456,7 @@
             document.getElementById('step3').style.display = 'block';
             break;
           case 4:
-            document.getElementById('step3').style.display = 'none'; // Скрываем шаг 3
+            document.getElementById('step3').style.display = 'none';
             document.getElementById('step4').style.display = 'block';
             calculator.setExpression({
               id: 'vertex',
@@ -347,7 +468,6 @@
           case 5:
             document.getElementById('step4').style.display = 'none';
             document.getElementById('step5').style.display = 'block';
-            // Ось симметрии
             calculator.setExpression({
               id: 'axis',
               latex: 'x = 3',
@@ -357,7 +477,6 @@
           case 6:
             document.getElementById('step5').style.display = 'none';
             document.getElementById('step6').style.display = 'block';
-            // Показываем точки пересечения с осями
             calculator.setExpression({
               id: 'x_intersect1',
               latex: '(2, 0)',
@@ -380,7 +499,6 @@
           case 7:
             document.getElementById('step6').style.display = 'none';
             document.getElementById('step7').style.display = 'block';
-            // Добавляем дополнительные точки
             calculator.setExpression({
               id: 'point3',
               latex: '(6, 8)',
@@ -391,7 +509,6 @@
           case 8:
             document.getElementById('step7').style.display = 'none';
             document.getElementById('step8').style.display = 'block';
-            // Соединяем точки отрезками
             calculator.setExpression({
               type: 'table',
               columns: [
@@ -403,16 +520,170 @@
           case 9:
             document.getElementById('step8').style.display = 'none';
             document.getElementById('step9').style.display = 'block';
-            // Показываем итоговую параболу
             calculator.setExpression({
               id: 'parabola',
               latex: 'y = x^2 - 6x + 8',
               color: Desmos.Colors.BLACK
             });
-            // Удаляем временные элементы
             ['vertex', 'x_intersect1', 'x_intersect2', 'y_intersect', 'axis', 'point1', 'point2', 'point3'].forEach(id => {
               calculator.removeExpression({id: id});
             });
+            nextBtn.style.display = 'none';
+            resetBtn.style.display = 'block';
+            break;
+        }
+      } else if (currentMethod === 'coefficients') {
+        switch (currentStep) {
+          case 1:
+            document.getElementById('step2-m2').style.display = 'block';
+            functionDisplay.textContent = `y = ${formatCoef(a)}x² ${formatSignedCoef(b)}x ${formatSignedCoef(c)}`;
+            nextBtn.textContent = 'Дальше!';
+            break;
+          case 2:
+            document.getElementById('step2-m2').style.display = 'none';
+            document.getElementById('step3-m2').style.display = 'block';
+            directionInfo.textContent = `Коэффициент a = ${a} ${a > 0 ? '> 0' : '< 0'}, значит ветви параболы направлены ${a > 0 ? 'вверх' : 'вниз'}.`;
+            break;
+          case 3:
+            document.getElementById('step3-m2').style.display = 'none';
+            document.getElementById('step4-m2').style.display = 'block';
+            vertex.x = -b / (2 * a);
+            vertex.y = a * vertex.x * vertex.x + b * vertex.x + c;
+            vertexInfo.innerHTML = `x₀ = -b/(2a) = -${b}/(2·${a}) = ${vertex.x.toFixed(2)}<br>
+                                   y(${vertex.x.toFixed(2)}) = ${a}·(${vertex.x.toFixed(2)})² ${formatSignedCoef(b)}·${vertex.x.toFixed(2)} ${formatSignedCoef(c)} = ${vertex.y.toFixed(2)}<br>
+                                   Вершина - <span class="point">(${vertex.x.toFixed(2)}; ${vertex.y.toFixed(2)})</span>.`;
+            calculator.setExpression({
+              id: 'vertex',
+              latex: `(${vertex.x.toFixed(2)}, ${vertex.y.toFixed(2)})`,
+              showLabel: true,
+              color: Desmos.Colors.RED
+            });
+            break;
+          case 4:
+            document.getElementById('step4-m2').style.display = 'none';
+            document.getElementById('step5-m2').style.display = 'block';
+            axisInfo.textContent = `x = ${vertex.x.toFixed(2)}`;
+            calculator.setExpression({
+              id: 'axis',
+              latex: `x = ${vertex.x.toFixed(2)}`,
+              color: Desmos.Colors.GREEN
+            });
+            break;
+          case 5:
+            document.getElementById('step5-m2').style.display = 'none';
+            document.getElementById('step6-m2').style.display = 'block';
+            let intersectionsText = '';
+            points = [];
+            
+            // С осью y (x = 0)
+            const yIntersect = c;
+            points.push({x: 0, y: yIntersect});
+            intersectionsText += `С осью y (x = 0): y = ${a}·0² ${formatSignedCoef(b)}·0 ${formatSignedCoef(c)} = ${yIntersect}<br>
+                                Точка пересечения: <span class="point">(0; ${yIntersect})</span><br><br>`;
+            
+            // С осью x (y = 0)
+            const D = b * b - 4 * a * c;
+            if (D > 0) {
+              const x1 = (-b - Math.sqrt(D)) / (2 * a);
+              const x2 = (-b + Math.sqrt(D)) / (2 * a);
+              points.push({x: x1, y: 0}, {x: x2, y: 0});
+              intersectionsText += `С осью x (y = 0): ${a}x² ${formatSignedCoef(b)}x ${formatSignedCoef(c)} = 0<br>
+                                  D = ${b}² - 4·${a}·${c} = ${D}<br>
+                                  x₁ = (${-b} - √${D})/(2·${a}) ≈ ${x1.toFixed(2)}<br>
+                                  x₂ = (${-b} + √${D})/(2·${a}) ≈ ${x2.toFixed(2)}<br>
+                                  Точки пересечения: <span class="point">(${x1.toFixed(2)}; 0)</span> и <span class="point">(${x2.toFixed(2)}; 0)</span>`;
+            } else if (D === 0) {
+              const x = -b / (2 * a);
+              points.push({x: x, y: 0});
+              intersectionsText += `С осью x (y = 0): ${a}x² ${formatSignedCoef(b)}x ${formatSignedCoef(c)} = 0<br>
+                                  D = ${b}² - 4·${a}·${c} = 0<br>
+                                  x = ${-b}/(2·${a}) = ${x.toFixed(2)}<br>
+                                  Точка пересечения: <span class="point">(${x.toFixed(2)}; 0)</span>`;
+            } else {
+              intersectionsText += `С осью x (y = 0): Уравнение не имеет действительных корней (D = ${D} < 0)<br>
+                                  Нет точек пересечения с осью x`;
+            }
+            
+            intersectionsInfo.innerHTML = intersectionsText;
+            
+            points.forEach((point, i) => {
+              if (point.y === 0 || point.x === 0) {
+                calculator.setExpression({
+                  id: `intersect${i}`,
+                  latex: `(${point.x.toFixed(2)}, ${point.y.toFixed(2)})`,
+                  showLabel: true,
+                  color: Desmos.Colors.BLUE
+                });
+              }
+            });
+            break;
+          case 6:
+            document.getElementById('step6-m2').style.display = 'none';
+            document.getElementById('step7-m2').style.display = 'block';
+            const step = 1;
+            let additionalPoints = [];
+            
+            const xMin = Math.min(...points.map(p => p.x)) - 2;
+            const xMax = Math.max(...points.map(p => p.x)) + 2;
+            
+            for (let x = vertex.x - step; x >= xMin; x -= step) {
+              const y = a * x * x + b * x + c;
+              additionalPoints.push({x, y});
+              if (additionalPoints.length >= 2) break;
+            }
+            
+            for (let x = vertex.x + step; x <= xMax; x += step) {
+              const y = a * x * x + b * x + c;
+              additionalPoints.push({x, y});
+              if (additionalPoints.length >= 4) break;
+            }
+            
+            points.push(...additionalPoints);
+            points.sort((a, b) => a.x - b.x);
+            
+            additionalPointsTable.innerHTML = '<tr><th>x</th><th>y</th></tr>';
+            additionalPoints.forEach(point => {
+              const row = additionalPointsTable.insertRow();
+              row.insertCell(0).textContent = point.x.toFixed(2);
+              row.insertCell(1).textContent = point.y.toFixed(2);
+            });
+            
+            additionalPoints.forEach((point, i) => {
+              calculator.setExpression({
+                id: `point${i}`,
+                latex: `(${point.x.toFixed(2)}, ${point.y.toFixed(2)})`,
+                showLabel: true,
+                color: Desmos.Colors.PURPLE
+              });
+            });
+            break;
+          case 7:
+            document.getElementById('step7-m2').style.display = 'none';
+            document.getElementById('step8-m2').style.display = 'block';
+            calculator.setExpression({
+              type: 'table',
+              columns: [
+                {latex: 'x', values: points.map(p => p.x)},
+                {latex: 'y', values: points.map(p => p.y), color: Desmos.Colors.ORANGE, lines: true, points: false}
+              ]
+            });
+            break;
+          case 8:
+            document.getElementById('step8-m2').style.display = 'none';
+            document.getElementById('step9-m2').style.display = 'block';
+            finalFunctionDisplay.textContent = `y = ${formatCoef(a)}x² ${formatSignedCoef(b)}x ${formatSignedCoef(c)}`;
+            calculator.setExpression({
+              id: 'parabola',
+              latex: `y = ${a}x^2 ${formatSignedCoef(b)}x ${formatSignedCoef(c)}`,
+              color: Desmos.Colors.BLACK
+            });
+            ['vertex', 'axis'].forEach(id => {
+              calculator.removeExpression({id: id});
+            });
+            for (let i = 0; i < 10; i++) {
+              calculator.removeExpression({id: `intersect${i}`});
+              calculator.removeExpression({id: `point${i}`});
+            }
             nextBtn.style.display = 'none';
             resetBtn.style.display = 'block';
             break;
@@ -422,12 +693,32 @@
 
     function resetCalculator() {
       calculator.setBlank();
-      calculator.setMathBounds({
-        left: -1,
-        right: 7,
-        bottom: -3,
-        top: 10
-      });
+      if (currentMethod === 'points') {
+        calculator.setMathBounds({
+          left: -1,
+          right: 7,
+          bottom: -3,
+          top: 10
+        });
+      } else {
+        calculator.setMathBounds({
+          left: -10,
+          right: 10,
+          bottom: -10,
+          top: 10
+        });
+      }
+    }
+
+    function formatCoef(coef) {
+      if (coef === 1) return '';
+      if (coef === -1) return '-';
+      return coef;
+    }
+
+    function formatSignedCoef(coef) {
+      if (coef >= 0) return `+ ${coef}`;
+      return `- ${Math.abs(coef)}`;
     }
   </script>
 </body>
