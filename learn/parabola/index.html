@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Обучение построению параболы</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right top, #e3f2fd, #bbdefb);
+      min-height: 100vh;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    .instructions {
+      width: 30%;
+      padding: 20px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+    }
+
+    .graph-container {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    h1 {
+      margin: 0 0 20px 0;
+      font-size: 1.8em;
+      color: #1a237e;
+    }
+
+    p {
+      color: #333;
+      font-size: 1.1em;
+      margin-bottom: 15px;
+    }
+
+    #calculator {
+      width: 100%;
+      height: 100vh;
+      border-radius: 0;
+      background-color: white;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 10px 0;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: background 0.3s ease;
+      min-width: 120px;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .instruction-btn {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      text-align: left;
+      background: #1a237e;
+      padding: 12px 15px;
+    }
+
+    .instruction-btn:hover {
+      background: #121858;
+    }
+
+    .step-content {
+      display: none;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .next-btn {
+      background: #388e3c;
+      display: none;
+      margin-top: 20px;
+    }
+
+    .next-btn:hover {
+      background: #2e7d32;
+    }
+
+    .reset-btn {
+      background: #d32f2f;
+      display: none;
+    }
+
+    .reset-btn:hover {
+      background: #b71c1c;
+    }
+
+    .math {
+      font-family: "Times New Roman", Times, serif;
+      font-style: italic;
+      color: #1a237e;
+    }
+
+    .point {
+      color: #d32f2f;
+      font-weight: bold;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 10px 0;
+      width: 100%;
+    }
+    table, th, td {
+      border: 1px solid #aaa;
+      padding: 5px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+
+    /* Декоративные фигуры */
+    .shape {
+      position: absolute;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    .shape1 {
+      top: -50px;
+      left: -50px;
+      width: 300px;
+      height: 300px;
+      background: #64b5f6;
+      clip-path: circle(50% at 50% 50%);
+    }
+
+    .shape2 {
+      bottom: -80px;
+      right: -80px;
+      width: 400px;
+      height: 400px;
+      background: #2196f3;
+      clip-path: polygon(0 0, 100% 20%, 80% 100%, 20% 80%);
+    }
+
+    .shape3 {
+      top: 30%;
+      left: -60px;
+      width: 150px;
+      height: 150px;
+      background: #90caf9;
+      clip-path: ellipse(50% 70% at 50% 50%);
+    }
+  </style>
+</head>
+<body>
+  <div class="shape shape1"></div>
+  <div class="shape shape2"></div>
+  <div class="shape shape3"></div>
+
+  <div class="container">
+    <div class="instructions">
+      <h1>Обучение построению параболы</h1>
+
+      <div id="initial-buttons">
+        <button class="instruction-btn" id="method1">Как построить параболу?</button>
+        <button class="instruction-btn" id="method2">Как построить параболу по коэффициентам?</button>
+      </div>
+
+      <button class="next-btn" id="next-btn">Начнём!</button>
+      <button class="reset-btn" id="reset-btn">Вернуться</button>
+
+      <div id="method1-steps" class="step-content">
+        <div id="step1" style="display:none;">
+          <h3>Построение параболы</h3>
+          <p>Научимся строить параболу на примере графика функции <span class="math">y = x² - 6x + 8</span> (a = 1, b = -6, c = 8).</p>
+        </div>
+        <div id="step2" style="display:none;">
+          <p>Для построения любого графика для начала нужно определить вид функции, по которому будет строиться график и вид самого графика. Тут всё просто:</p>
+          <p>Функция квадратичная, график - парабола.</p>
+        </div>
+        <div id="step3" style="display:none;">
+          <p>1. Коэффициент <span class="math">a = 1 > 0</span>, значит ветви параболы направлены <strong>вверх</strong>.</p>
+        </div>
+        <div id="step4" style="display:none;">
+          <p>2. Теперь надо определить вершину параболы. Для этого есть специальная формула:</p>
+          <p class="math">x₀ = -b/(2a) = -(-6)/(2·1) = 6/2 = 3</p>
+          <p>Подставляем <span class="math">x = 3</span> в уравнение и находим y:</p>
+          <p class="math">y(3) = 3² - 6·3 + 8 = 9 - 18 + 8 = -1</p>
+          <p>Вершина - <span class="point">(3; -1)</span>.</p>
+        </div>
+        <div id="step5" style="display:none;">
+          <p>3. Ось симметрии параболы (вертикальная линия, проходящая через вершину):</p>
+          <p class="math">x = 3</p>
+        </div>
+        <div id="step6" style="display:none;">
+          <p>4. Найдем точки пересечения с осями координат:</p>
+          <p>С осью <span class="math">x</span> (<span class="math">y = 0</span>):</p>
+          <p class="math">x² - 6x + 8 = 0</p>
+          <p class="math">D = (-6)² - 4·1·8 = 36 - 32 = 4</p>
+          <p class="math">x₁ = (6 - √4)/2 = (6 - 2)/2 = 2</p>
+          <p class="math">x₂ = (6 + √4)/2 = (6 + 2)/2 = 4</p>
+          <p>Точки пересечения: <span class="point">(2; 0)</span> и <span class="point">(4; 0)</span></p>
+          <p>С осью <span class="math">y</span> (<span class="math">x = 0</span>):</p>
+          <p class="math">y = 0² - 6·0 + 8 = 8</p>
+          <p>Точка пересечения: <span class="point">(0; 8)</span></p>
+        </div>
+        <div id="step7" style="display:none;">
+          <p>5. Дополнительные точки для построения(парабола строится по пяти точкам):</p>
+          <table>
+            <tr><th>x</th><th>y</th></tr>
+            <tr><td>6</td><td>8</td></tr>
+          </table>
+        </div>
+        <div id="step8" style="display:none;">
+          <p>Соединим полученные точки!</p>
+        </div>
+        <div id="step9" style="display:none;">
+          <p>Готово! Мы построили график квадратичной функции:</p>
+          <p class="math">y = x² - 6x + 8</p>
+        </div>
+      </div>
+
+      <div id="method2-steps" class="step-content">
+        <h3>Построение параболы по коэффициентам</h3>
+        <p><strong>Шаг 1:</strong> Общий вид квадратичной функции: y = ax² + bx + c.</p>
+        <p><strong>Шаг 2:</strong> Коэффициент 'a' определяет направление и ширину параболы.</p>
+        <p><strong>Шаг 3:</strong> Коэффициент 'b' влияет на положение вершины по оси x.</p>
+        <p><strong>Шаг 4:</strong> Коэффициент 'c' - это точка пересечения с осью y.</p>
+      </div>
+    </div>
+
+    <div class="graph-container">
+      <div id="calculator"></div>
+    </div>
+  </div>
+
+  <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+  <script>
+    const elt = document.getElementById('calculator');
+    const calculator = Desmos.GraphingCalculator(elt, {
+      settingsMenu: false,
+      expressions: false,
+      keypad: false,
+      xAxisLabel: 'x',
+      yAxisLabel: 'y'
+    });
+
+    // Элементы интерфейса
+    const nextBtn = document.getElementById('next-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const method1Btn = document.getElementById('method1');
+    const method2Btn = document.getElementById('method2');
+    const method1Steps = document.getElementById('method1-steps');
+    const method2Steps = document.getElementById('method2-steps');
+    const initialButtons = document.getElementById('initial-buttons');
+
+    let currentStep = 0;
+    let currentMethod = null;
+
+    // Точки для построения параболы y = x² - 6x + 8
+    const parabolaPoints = [
+      {x: 0, y: 8},    // пересечение с осью y
+      {x: 2, y: 0},    // пересечение с осью x
+      {x: 3, y: -1},   // вершина
+      {x: 4, y: 0},    // пересечение с осью x
+      {x: 6, y: 8}     // дополнительная точка
+    ];
+
+    // Обработчики событий
+    method1Btn.addEventListener('click', function() {
+      currentMethod = 'points';
+      initialButtons.style.display = 'none';
+      method1Steps.classList.add('active');
+      nextBtn.style.display = 'block';
+      resetCalculator();
+    });
+
+    method2Btn.addEventListener('click', function() {
+      currentMethod = 'coefficients';
+      initialButtons.style.display = 'none';
+      method2Steps.classList.add('active');
+      nextBtn.style.display = 'block';
+      resetCalculator();
+    });
+
+    nextBtn.addEventListener('click', function() {
+      currentStep++;
+      updateContent();
+    });
+
+    resetBtn.addEventListener('click', function() {
+      location.reload();
+    });
+
+    function updateContent() {
+      if (currentMethod === 'points') {
+        switch (currentStep) {
+          case 1:
+            document.getElementById('step1').style.display = 'block';
+            nextBtn.textContent = 'Дальше!';
+            break;
+          case 2:
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            break;
+          case 3:
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'block';
+            break;
+          case 4:
+            document.getElementById('step3').style.display = 'none'; // Скрываем шаг 3
+            document.getElementById('step4').style.display = 'block';
+            calculator.setExpression({
+              id: 'vertex',
+              latex: '(3, -1)',
+              showLabel: true,
+              color: Desmos.Colors.RED
+            });
+            break;
+          case 5:
+            document.getElementById('step4').style.display = 'none';
+            document.getElementById('step5').style.display = 'block';
+            // Ось симметрии
+            calculator.setExpression({
+              id: 'axis',
+              latex: 'x = 3',
+              color: Desmos.Colors.GREEN
+            });
+            break;
+          case 6:
+            document.getElementById('step5').style.display = 'none';
+            document.getElementById('step6').style.display = 'block';
+            // Показываем точки пересечения с осями
+            calculator.setExpression({
+              id: 'x_intersect1',
+              latex: '(2, 0)',
+              showLabel: true,
+              color: Desmos.Colors.BLUE
+            });
+            calculator.setExpression({
+              id: 'x_intersect2',
+              latex: '(4, 0)',
+              showLabel: true,
+              color: Desmos.Colors.BLUE
+            });
+            calculator.setExpression({
+              id: 'y_intersect',
+              latex: '(0, 8)',
+              showLabel: true,
+              color: Desmos.Colors.BLUE
+            });
+            break;
+          case 7:
+            document.getElementById('step6').style.display = 'none';
+            document.getElementById('step7').style.display = 'block';
+            // Добавляем дополнительные точки
+            calculator.setExpression({
+              id: 'point3',
+              latex: '(6, 8)',
+              showLabel: true,
+              color: Desmos.Colors.PURPLE
+            });
+            break;
+          case 8:
+            document.getElementById('step7').style.display = 'none';
+            document.getElementById('step8').style.display = 'block';
+            // Соединяем точки отрезками
+            calculator.setExpression({
+              type: 'table',
+              columns: [
+                {latex: 'x', values: parabolaPoints.map(p => p.x)},
+                {latex: 'y', values: parabolaPoints.map(p => p.y), color: Desmos.Colors.ORANGE, lines: true, points: false}
+              ]
+            });
+            break;
+          case 9:
+            document.getElementById('step8').style.display = 'none';
+            document.getElementById('step9').style.display = 'block';
+            // Показываем итоговую параболу
+            calculator.setExpression({
+              id: 'parabola',
+              latex: 'y = x^2 - 6x + 8',
+              color: Desmos.Colors.BLACK
+            });
+            // Удаляем временные элементы
+            ['vertex', 'x_intersect1', 'x_intersect2', 'y_intersect', 'axis', 'point1', 'point2', 'point3'].forEach(id => {
+              calculator.removeExpression({id: id});
+            });
+            nextBtn.style.display = 'none';
+            resetBtn.style.display = 'block';
+            break;
+        }
+      }
+    }
+
+    function resetCalculator() {
+      calculator.setBlank();
+      calculator.setMathBounds({
+        left: -1,
+        right: 7,
+        bottom: -3,
+        top: 10
+      });
+    }
+  </script>
+</body>
+</html>
